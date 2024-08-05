@@ -2,13 +2,17 @@ import cv2
 import mediapipe as mp
 import pyautogui
 import numpy as np
+import time
 import MouseController
+
+# Initialize smoothing variables
+previous_x, previous_y = None, None
+smoothing_factor = .30  # Adjust this for more or less smoothing
 
 # Initialize Mediapipe Hands and Drawing modules
 mp_hands = mp.solutions.hands
 mp_drawing = mp.solutions.drawing_utils
 controller = MouseController.MouseController()
-gesture = 0 # Create class for gestures
 chosen_hand = "Right"
 
 # Initialize Video Capture
@@ -146,21 +150,40 @@ with mp_hands.Hands(
                         end_point = (int(end.x * w), int(end.y * h))
                         cv2.line(image, start_point, end_point, (0, 0, 0), 2)
 
-                # TODO: FIND A WAY TO MAKE THE MOUSE TRACKING GOOD
-                # NOTE: Mouse Tracking
-                # Moving pointer
-                scaling_factor = 2.5
-                index_tip = hand_landmarks.landmark[mp_hands.HandLandmark.MIDDLE_FINGER_MCP]
+                # # TODO: FIND A WAY TO MAKE THE MOUSE TRACKING GOOD
+                # # NOTE: Mouse Tracking
+                # # Moving pointer
+                scaling_factor = 6.0
+                index_tip_x = (hand_landmarks.landmark[mp_hands.HandLandmark.INDEX_FINGER_MCP].x + hand_landmarks.landmark[mp_hands.HandLandmark.RING_FINGER_MCP].x) / 2
+                index_tip_y = (hand_landmarks.landmark[mp_hands.HandLandmark.RING_FINGER_MCP].y + hand_landmarks.landmark[mp_hands.HandLandmark.WRIST].y) / 2
+               
+                # Get screen dimensions
                 screen_width, screen_height = pyautogui.size()
-                x = int(index_tip.x * screen_width * scaling_factor) - screen_width
-                print(x)
-                y = int(index_tip.y * screen_height * scaling_factor)
-                controller.move_mouse(x, y)
+
+                # Convert normalized coordinates to screen coordinates
+                x = int((index_tip_x * screen_width - (screen_width * .5)) * scaling_factor) - screen_width
+                y = int((index_tip_y * screen_height - (screen_height * .7)) * scaling_factor)
+
+                # Apply smoothing
+                if previous_x is not None and previous_y is not None:
+                    x = int(previous_x * (1 - smoothing_factor) + x * smoothing_factor)
+                    y = int(previous_y * (1 - smoothing_factor) + y * smoothing_factor)
+
+                # Move the mouse
+                pyautogui.moveTo(x, y)
+
+                # Store current position for smoothing
+                previous_x, previous_y = x, y
 
                 # Mouse Functions
                 gesture = recognize_gesture(hand_landmarks, image)
                 if gesture == "Left Click":
                     controller.click()
+
+                    # TODO: FIND A FIX FOR MOUSE DRAG
+                    #time.sleep(.5)
+                    #controller.drag()
+
 
 
                 cv2.putText(image, gesture, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (200, 200, 200), 2, cv2.LINE_AA)
