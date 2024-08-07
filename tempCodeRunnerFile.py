@@ -1,2 +1,1 @@
-print("Y: " + str(index_tip_y))
-                # print("X: " + str(index_tip_x))
+image = cv2.cvtColor(cv2.flip(image, 1), cv2.COLOR_BGR2RGB)

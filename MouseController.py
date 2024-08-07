@@ -39,4 +39,10 @@ class MouseController:
         except pyautogui.FailSafeException:
             print("Fail-safe triggered. Moving to a corner of the screen.")
 
+    def scroll(self, clicks):
+        try:
+            pyautogui.scroll(clicks)
+        except pyautogui.FailSafeException:
+            print("Fail-safe triggered. Moving to a corner of the screen.")
+
     

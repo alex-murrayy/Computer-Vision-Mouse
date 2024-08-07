@@ -1,6 +1,7 @@
 import cv2
 import mediapipe as mp
 import pyautogui
+import dlib
 import numpy as np
 import time
 import MouseController
@@ -178,16 +179,15 @@ with mp_hands.Hands(
                 # Mouse Functions
                 gesture = recognize_gesture(hand_landmarks, image)
                 if gesture == "Left Click":
-                    controller.click()
+                     controller.click()
 
-                    # TODO: FIND A FIX FOR MOUSE DRAG
-                    #time.sleep(.5)
-                    #controller.drag()
+                scroll_direction = -10
+                if gesture == "Scrolling":
+                    controller.scroll(scroll_direction)
 
-
+                    
 
                 cv2.putText(image, gesture, (10, 30), cv2.FONT_HERSHEY_SIMPLEX, 1, (200, 200, 200), 2, cv2.LINE_AA)
-
 
         # Display the image
         cv2.imshow('Hand Tracking', image)
