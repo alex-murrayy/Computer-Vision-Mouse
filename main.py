@@ -1,9 +1,6 @@
 import cv2
 import mediapipe as mp
 import pyautogui
-import dlib
-import numpy as np
-import time
 import MouseController
 
 # Initialize smoothing variables
